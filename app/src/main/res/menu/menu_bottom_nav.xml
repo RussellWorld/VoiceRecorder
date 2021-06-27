@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/recordFragment"
+        android:icon="@drawable/outline_mic_black_48"
+        android:title="@string/title_record" />
+    <item
+        android:id="@+id/listRecordFragment"
+        android:icon="@drawable/outline_reorder_black_48"
+        android:title="@string/title_recordlist" />
+</menu>
