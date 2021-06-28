@@ -25,20 +25,16 @@ class RecordService : Service() {
 
     private var mFileName: String? = null
     private var mFilePatch: String? = null
-    private var mCountRecords: Int? = null
 
     private var mRecorder: MediaRecorder? = null
 
     private var mStartingTimesMillis: Long = 0
     private var mElapsedMillis: Long = 0
-    private var mIncrementTimerTask: TimerTask? = null
 
     private var mDatabase: RecordDatabaseDao? = null
 
     private val mJob = Job()
     private val mUiScope = CoroutineScope(Dispatchers.Main + mJob)
-
-    private val CHANNEL_ID = "RecordService"
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -51,22 +47,21 @@ class RecordService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mCountRecords = intent?.extras?.get("COUNT") as Int?
-        onStartCommand(intent, flags, startId)
+       startRecording()
         return START_STICKY
     }
 
     private fun startRecording() {
         setFileNameAndPath()
 
-        mRecorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setOutputFile(mFilePatch)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setAudioChannels(1)
-            setAudioEncodingBitRate(192000)
-        }
+        mRecorder = MediaRecorder()
+        mRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+        mRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+        mRecorder?.setOutputFile(mFilePatch)
+        mRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+        mRecorder?.setAudioChannels(1)
+        mRecorder?.setAudioEncodingBitRate(192000)
+
 
         try {
             mRecorder?.prepare()
@@ -80,7 +75,10 @@ class RecordService : Service() {
 
     private fun createNotification(): Notification {
         val mBuilder: NotificationCompat.Builder =
-            NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            NotificationCompat.Builder(
+                applicationContext,
+                getString(R.string.notification_channel_id)
+            )
                 .setSmallIcon(R.drawable.outline_mic_black_48)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.notification_recording))
@@ -105,9 +103,9 @@ class RecordService : Service() {
         val dateTime = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(System.currentTimeMillis())
 
         do {
-            mFilePatch = ("${getString(R.string.default_file_name)} $dateTime$count.mp4").apply {
-                application.getExternalFilesDir(null)?.absolutePath
-            }
+            mFilePatch = (getString(R.string.default_file_name)
+                    + "_" + dateTime + count + ".mp4")
+            mFilePatch = application.getExternalFilesDir(null)?.absolutePath
             mFilePatch += "/$mFileName"
 
             count++
@@ -128,17 +126,11 @@ class RecordService : Service() {
             Toast.LENGTH_SHORT
         ).show()
 
-        recordingItem.apply {
-            name = mFileName.toString()
-            filePath = mFilePatch.toString()
-            length = mElapsedMillis
-            time = System.currentTimeMillis()
-        }
+        recordingItem.name = mFileName.toString()
+        recordingItem.filePath = mFilePatch.toString()
+        recordingItem.length = mElapsedMillis
+        recordingItem.time = System.currentTimeMillis()
 
-        if (mIncrementTimerTask != null) {
-            mIncrementTimerTask?.cancel()
-            mIncrementTimerTask = null
-        }
         mRecorder = null
 
         try {

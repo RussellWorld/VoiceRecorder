@@ -18,7 +18,7 @@ class RecordViewModel(private val app: Application) : AndroidViewModel(app) {
     private val TRIGGER_TIME = "TRIGGER_AT"
     private val second: Long = 1_000L
 
-    private val prefs = app.getSharedPreferences(
+    private var prefs = app.getSharedPreferences(
         "pollingapp.rassellworld.voicerecorderapp", Context.MODE_PRIVATE
     )
 
@@ -43,7 +43,9 @@ class RecordViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     fun stopTimer() {
-        timer.cancel()
+        if(this::timer.isInitialized){
+            timer.cancel()
+        }
         resetTimer()
     }
 
