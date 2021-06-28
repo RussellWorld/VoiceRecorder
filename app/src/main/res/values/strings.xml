@@ -19,4 +19,5 @@
     <string name="notification_channel_id" translatable="false">RecordService</string>
     <string name="notification_channel_name" translatable="true">VoiceRecorder</string>
     <string name="descr_FAB">Кнопка</string>
+    <string name="file_length_text">00:00</string>
 </resources>
